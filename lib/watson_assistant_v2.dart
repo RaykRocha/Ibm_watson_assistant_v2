@@ -7,7 +7,8 @@ import 'dart:convert';
 class WatsonAssistantResponse {
   String resultText;
   WatsonAssistantContext context;
-  WatsonAssistantResponse({this.resultText, this.context});
+  Map<String, dynamic> result;
+  WatsonAssistantResponse({this.resultText, this.context, this.result});
 }
 
 class WatsonAssistantContext {
@@ -90,11 +91,11 @@ class WatsonAssistantApiV2 {
       //Create a new session. A session is used to send user input to a skill and receive responses. It also maintains the state of the conversation.
       print(newSess.body);
       var parsedJsonSession = json.decode(newSess.body);
-      String session_id = parsedJsonSession['session_id'];
+      String sessionId = parsedJsonSession['session_id'];
       /* print('the session $session_id is created');*/
 
       var receivedText = await http.post(
-        '${watsonAssistantCredential.url}/assistants/${watsonAssistantCredential.assistantID}/sessions/$session_id/message?version=${watsonAssistantCredential.version}',
+        '${watsonAssistantCredential.url}/assistants/${watsonAssistantCredential.assistantID}/sessions/$sessionId/message?version=${watsonAssistantCredential.version}',
         headers: {'Content-Type': 'application/json', 'Authorization': authn},
         body: json.encode(_body),
         //body: data
@@ -104,7 +105,7 @@ class WatsonAssistantApiV2 {
       print(receivedText.body);*/
 
       var parsedJson = json.decode(receivedText.body);
-      var _WatsonResponse = parsedJson['output']['generic'][0]['text'];
+      var _watsonResponse = parsedJson['output']['generic'][0]['text'];
 
       Map<String, dynamic> _result = json.decode(receivedText.body);
 
@@ -113,7 +114,8 @@ class WatsonAssistantApiV2 {
           WatsonAssistantContext(context: _result['context']);
 
       WatsonAssistantResponse watsonAssistantResult = WatsonAssistantResponse(
-          context: _context, resultText: _WatsonResponse);
+          context: _context, resultText: _watsonResponse, result: _result);
+
       return watsonAssistantResult;
     } catch (error) {
       //print(error);
